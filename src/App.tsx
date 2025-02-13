@@ -15,22 +15,35 @@ function App() {
     });
   }, []);
 
-  function createTodo() {
-    client.models.Todo.create({ content: window.prompt("Todo content") });
+  function addAction(event: React.FormEvent<HTMLFormElement>) {
+    event.preventDefault();
+    const formData = new FormData(event.currentTarget);
+    const data = formData.get("todo") as string;
+    console.log(data);
+    client.models.Todo.create({ content: data });
   }
-
-  function deleteTodo(id: string) {
+  function editAction(e: React.ChangeEvent<HTMLInputElement>, id: string) {
+    client.models.Todo.update({ id, content: e.target.value });
+  }
+  function deleteAction(id: string) {
     client.models.Todo.delete({ id });
   }
-
   return (
     <main>
       <h1>{user?.signInDetails?.loginId}'s todos</h1>
-      <button onClick={createTodo}>+ new</button>
+      <form onSubmit={addAction}>
+        <label htmlFor="todo">Todo</label>
+        <input type="text" id="todo" name="todo" />
+        <button type="submit">Add</button>
+      </form>
       <ul>
         {todos.map((todo) => (
-          <li key={todo.id} onClick={() => deleteTodo(todo.id)}>
-            {todo.content}
+          <li key={todo.id}>
+            <input
+              onChange={(e) => editAction(e, todo.id)}
+              value={todo.content ?? ""}
+            />
+            <button onClick={() => deleteAction(todo.id)}>Delete</button>
           </li>
         ))}
       </ul>
